@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@samrith-s/lit",
+      "name": "@samrith/lit",
       "devDependencies": {
         "typescript": "^6.0.3",
       },
