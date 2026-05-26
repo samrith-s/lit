@@ -23,11 +23,23 @@ type SlotKey<S extends string> = S extends `${infer K}?:${string}`
   ? K
   : S extends `${infer K}:${string}`
     ? K
-    : never;
+    : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=`
+      ? never
+      : S;
 
 type SlotOptional<S extends string> = S extends `${string}?:${string}` ? true : false;
 
-type SlotTypeName<S extends string> = SlotRest<S> extends `${infer T}=${string}` ? T : SlotRest<S>;
+type SlotHasExplicitType<S extends string> = S extends `${string}:${string}` | `${string}?:${string}`
+  ? true
+  : false;
+
+type SlotTypeName<S extends string> = SlotHasExplicitType<S> extends true
+  ? SlotRest<S> extends `${infer T}=${string}`
+    ? T
+    : SlotRest<S> extends ""
+      ? "string"
+      : SlotRest<S>
+  : "string";
 
 type SlotValueType<T extends string> = T extends "string"
   ? string
@@ -43,9 +55,15 @@ type ValidSlotSpec<S extends string> = S extends `${string}=${string}`
     : never
   : S extends `${string}?:${"string" | "number" | "boolean"}${string}`
     ? S
-    : S extends `${string}:${"string" | "number" | "boolean"}`
+    : S extends `${string}?:`
       ? S
-      : never;
+      : S extends `${string}:${"string" | "number" | "boolean"}`
+        ? S
+        : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=`
+          ? never
+          : S extends `${infer K}`
+            ? K extends "" ? never : S
+            : never;
 
 type ParamFromSlot<S extends string> =
   SlotKey<S> extends infer K extends string
@@ -81,7 +99,8 @@ interface ParsedSlot {
 
 type ResolvedSlot = { kind: "fn"; fn: LitNestSlot } | { kind: "slot"; parsed: ParsedSlot };
 
-const slotPattern = /^([^?:]+)(\?)?:([^=]+)(?:=(.*))?$/;
+const bareSlotPattern = /^[^?:=]+$/;
+const slotPattern = /^([^?:=]+)(\?)?:([^=]*)(?:=(.*))?$/;
 
 function parseDefault(raw: string, type: string): LitValue {
   if (type === "number") {
@@ -113,14 +132,19 @@ function parseDefault(raw: string, type: string): LitValue {
 }
 
 function parseSlot(spec: string): ParsedSlot {
+  if (bareSlotPattern.test(spec)) {
+    return { key: spec };
+  }
+
   const match = slotPattern.exec(spec);
   if (!match) {
     throw new Error(
-      `Invalid lit slot "${spec}". Expected "name:type", "name?:type", or "name?:type=default".`
+      `Invalid lit slot "${spec}". Expected "name", "name?:", "name:type", "name?:type", or "name?:type=default".`
     );
   }
 
-  const [, key, optional, type, defaultRaw] = match;
+  const [, key, optional, rawType, defaultRaw] = match;
+  const type = rawType === "" ? "string" : rawType;
 
   if (defaultRaw !== undefined && optional !== "?") {
     throw new Error(

@@ -5,7 +5,7 @@ Type-safe tagged template literals for TypeScript. Declare slot names and types 
 ```ts
 import { lit } from "@samrith-s/lit";
 
-const greet = lit`Hello, ${"name:string"}! You are ${"age?:number=18"} years old.`;
+const greet = lit`Hello, ${"name"}! You are ${"age?:number=18"} years old.`;
 
 greet({ name: "Ada" });
 // => "Hello, Ada! You are 18 years old."
@@ -22,7 +22,7 @@ String templates often mix static text with dynamic values. Common approaches le
 - **Separate schemas** — types and defaults live far from the string they describe.
 - **Untyped helpers** — easy to pass the wrong key or type at runtime.
 
-Lit keeps the template and its contract in one place. Slot specs like `"name:string"` sit in the template literal; TypeScript infers the parameter object; optional slots and defaults are first-class.
+Lit keeps the template and its contract in one place. Slot specs like `"name"` or `"name:string"` sit in the template literal; TypeScript infers the parameter object; optional slots and defaults are first-class.
 
 ## Install
 
@@ -37,18 +37,18 @@ Or copy [`lit.js`](./dist/lit.js) into your project — the library is a single 
 ```ts
 import { lit } from "@samrith-s/lit";
 
-// Required slot
-const title = lit`Issue #${"id:number"}: ${"title:string"}`;
+// Required string slot (type omitted → string)
+const title = lit`Issue #${"id:number"}: ${"title"}`;
 title({ id: 42, title: "Fix the build" });
 // => "Issue #42: Fix the build"
 
-// Optional slot (omitted → empty string)
-const line = lit`Status: ${"status?:string"}`;
+// Optional string slot (omitted → empty string)
+const line = lit`Status: ${"status?:"}`;
 line({});
 // => "Status: "
 
 // Optional slot with default
-const meta = lit`Version ${"version?:string=0.0.0"}`;
+const meta = lit`Version ${"version?:=0.0.0"}`;
 meta({});
 // => "Version 0.0.0"
 ```
@@ -59,6 +59,9 @@ Place slot descriptors in `${...}` inside a `lit` tagged template. Each descript
 
 | Form              | Meaning                               |
 | ----------------- | ------------------------------------- |
+| `name`            | Required string (type omitted)        |
+| `name?:`          | Optional string (type omitted)        |
+| `name?:=default`  | Optional string with default          |
 | `name:string`     | Required string                       |
 | `name:number`     | Required number                       |
 | `name:boolean`    | Required boolean                      |
@@ -67,8 +70,9 @@ Place slot descriptors in `${...}` inside a `lit` tagged template. Each descript
 
 **Rules:**
 
-- Types must be exactly `string`, `number`, or `boolean`.
-- Defaults require the optional marker: `name?:type=default` (not `name:type=default`).
+- Omit the type to default to `string` — use `name` or `name?:` instead of `name:string` / `name?:string`.
+- When a type is given, it must be exactly `string`, `number`, or `boolean`.
+- Defaults require the optional marker: `name?:=default` or `name?:type=default` (not `name:type=default`).
 - Default literals are parsed at template definition time (`true` / `false` for booleans, numeric literals for numbers, raw text for strings).
 
 Invalid specs throw when the template is created:
@@ -76,7 +80,7 @@ Invalid specs throw when the template is created:
 ```ts
 lit`${"name:object"}`; // Error: invalid type
 lit`${"name:string=hi"}`; // Error: default without ?
-lit`${"bad-format"}`; // Error: invalid slot format
+lit`${"name?:number=hi"}`; // Error: invalid number default
 ```
 
 ## API
@@ -86,7 +90,7 @@ lit`${"bad-format"}`; // Error: invalid slot format
 Tagged template function. Returns a renderer function (and supports nesting — see below).
 
 ```ts
-const template = lit`Hello ${"name:string"}!`;
+const template = lit`Hello ${"name"}!`;
 
 // Call with parameters
 template({ name: "World" }); // "Hello World!"
@@ -97,9 +101,9 @@ template({ name: "World" }); // "Hello World!"
 Exported type for the return value:
 
 ```ts
-import type { LitFn } from "./lit";
+import type { LitFn } from "@samrith/lit";
 
-const fn: LitFn<{ name: string }> = lit`${"name:string"}`;
+const fn: LitFn<{ name: string }> = lit`${"name"}`;
 ```
 
 ### Nested templates
@@ -138,19 +142,19 @@ Lit merges parameters from all slots in a template (and from nested templates) i
 
 Thrown when the template is **defined**, not when it is rendered:
 
-| Situation                      | Message (summary)                                           |
-| ------------------------------ | ----------------------------------------------------------- |
-| Malformed slot string          | Expected `name:type`, `name?:type`, or `name?:type=default` |
-| Default on required slot       | Defaults require `?`                                        |
-| Unknown type                   | Expected `string`, `number`, or `boolean`                   |
-| Invalid boolean/number default | Invalid default for type                                    |
+| Situation                      | Message (summary)                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| Malformed slot string          | Expected `name`, `name?:`, `name:type`, `name?:type`, or `name?:type=default` |
+| Default on required slot       | Defaults require `?`                                                          |
+| Unknown type                   | Expected `string`, `number`, or `boolean`                                     |
+| Invalid boolean/number default | Invalid default for type                                                      |
 
 ## Examples
 
 ### Email subject
 
 ```ts
-const subject = lit`[${"project:string"}] ${"action:string"}: ${"item:string"}`;
+const subject = lit`[${"project"}] ${"action"}: ${"item"}`;
 
 subject({
   project: "lit",
@@ -163,7 +167,7 @@ subject({
 ### Conditional copy with optional segment
 
 ```ts
-const banner = lit`Welcome${"name?:string"}!`;
+const banner = lit`Welcome${"name?:"}!`;
 
 banner({}); // "Welcome!"
 banner({ name: ", Ada" }); // "Welcome, Ada!"  (leading comma in value if desired)

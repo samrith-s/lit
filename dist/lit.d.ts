@@ -7,11 +7,12 @@ interface LitNestBrand {
     readonly __litNest?: true;
 }
 type SlotRest<S extends string> = S extends `${string}?:${infer R}` ? R : S extends `${string}:${infer R}` ? R : never;
-type SlotKey<S extends string> = S extends `${infer K}?:${string}` ? K : S extends `${infer K}:${string}` ? K : never;
+type SlotKey<S extends string> = S extends `${infer K}?:${string}` ? K : S extends `${infer K}:${string}` ? K : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=` ? never : S;
 type SlotOptional<S extends string> = S extends `${string}?:${string}` ? true : false;
-type SlotTypeName<S extends string> = SlotRest<S> extends `${infer T}=${string}` ? T : SlotRest<S>;
+type SlotHasExplicitType<S extends string> = S extends `${string}:${string}` | `${string}?:${string}` ? true : false;
+type SlotTypeName<S extends string> = SlotHasExplicitType<S> extends true ? SlotRest<S> extends `${infer T}=${string}` ? T : SlotRest<S> extends "" ? "string" : SlotRest<S> : "string";
 type SlotValueType<T extends string> = T extends "string" ? string : T extends "number" ? number : T extends "boolean" ? boolean : never;
-type ValidSlotSpec<S extends string> = S extends `${string}=${string}` ? S extends `${string}?:${string}=${string}` ? S : never : S extends `${string}?:${"string" | "number" | "boolean"}${string}` ? S : S extends `${string}:${"string" | "number" | "boolean"}` ? S : never;
+type ValidSlotSpec<S extends string> = S extends `${string}=${string}` ? S extends `${string}?:${string}=${string}` ? S : never : S extends `${string}?:${"string" | "number" | "boolean"}${string}` ? S : S extends `${string}?:` ? S : S extends `${string}:${"string" | "number" | "boolean"}` ? S : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=` ? never : S extends `${infer K}` ? K extends "" ? never : S : never;
 type ParamFromSlot<S extends string> = SlotKey<S> extends infer K extends string ? SlotOptional<S> extends true ? {
     [P in K]?: SlotValueType<SlotTypeName<S>> | null;
 } : {

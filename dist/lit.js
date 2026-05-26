@@ -1,4 +1,5 @@
-const slotPattern = /^([^?:]+)(\?)?:([^=]+)(?:=(.*))?$/;
+const bareSlotPattern = /^[^?:=]+$/;
+const slotPattern = /^([^?:=]+)(\?)?:([^=]*)(?:=(.*))?$/;
 function parseDefault(raw, type) {
     if (type === "number") {
         const value = Number(raw);
@@ -22,11 +23,15 @@ function parseDefault(raw, type) {
     throw new Error(`Invalid lit slot type "${type}". Expected "string", "number", or "boolean".`);
 }
 function parseSlot(spec) {
+    if (bareSlotPattern.test(spec)) {
+        return { key: spec };
+    }
     const match = slotPattern.exec(spec);
     if (!match) {
-        throw new Error(`Invalid lit slot "${spec}". Expected "name:type", "name?:type", or "name?:type=default".`);
+        throw new Error(`Invalid lit slot "${spec}". Expected "name", "name?:", "name:type", "name?:type", or "name?:type=default".`);
     }
-    const [, key, optional, type, defaultRaw] = match;
+    const [, key, optional, rawType, defaultRaw] = match;
+    const type = rawType === "" ? "string" : rawType;
     if (defaultRaw !== undefined && optional !== "?") {
         throw new Error(`Invalid lit slot "${spec}". Defaults require an optional slot ("name?:type=default").`);
     }
