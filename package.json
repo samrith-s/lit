@@ -1,6 +1,23 @@
 {
   "name": "@samrith/lit",
   "version": "0.0.0",
+  "description": "Type-safe tagged template literals for TypeScript.",
+  "keywords": [
+    "typescript",
+    "template-literals",
+    "tagged-templates",
+    "type-safe",
+    "string-interpolation",
+    "i18n"
+  ],
+  "homepage": "https://github.com/samrith-s/lit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samrith-s/lit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samrith-s/lit/issues"
+  },
   "type": "module",
   "exports": {
     ".": {
