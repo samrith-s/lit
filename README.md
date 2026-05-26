@@ -3,7 +3,7 @@
 Type-safe tagged template literals for TypeScript. Declare slot names and types inline, get compile-time checking and a small runtime renderer — no separate schema file.
 
 ```ts
-import { lit } from "@samrith-s/lit";
+import { lit } from "@samrith/lit";
 
 const greet = lit`Hello, ${"name"}! You are ${"age?:number=18"} years old.`;
 
@@ -17,7 +17,7 @@ greet({ name: "Ada", age: 42 });
 ## Install
 
 ```bash
-bun add @samrith-s/lit
+bun add @samrith/lit
 ```
 
 Or copy [`lit.js`](./dist/lit.js) into your project — the library is a single file with no runtime dependencies.
@@ -35,7 +35,7 @@ Lit keeps the template and its contract in one place. Slot specs like `"name"` o
 ## Quick start
 
 ```ts
-import { lit } from "@samrith-s/lit";
+import { lit } from "@samrith/lit";
 
 // Required string slot (type omitted → string)
 const title = lit`Issue #${"id:number"}: ${"title"}`;
