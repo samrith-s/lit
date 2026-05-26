@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
 
       - uses: actions/setup-node@v4
         with:
@@ -44,8 +46,8 @@ jobs:
 
       - name: Commit and tag
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Samrith Shankar"
+          git config user.email "9032162+samrith-s@users.noreply.github.com"
           git add package.json dist/
           git commit -m "release v${{ steps.bump.outputs.version }}"
           git tag "v${{ steps.bump.outputs.version }}"
@@ -53,7 +55,7 @@ jobs:
 
       - name: Create GitHub release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh release create "v${{ steps.bump.outputs.version }}" \
             --title "v${{ steps.bump.outputs.version }}" \
