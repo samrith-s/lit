@@ -49,7 +49,7 @@ jobs:
           VERSION="v${{ steps.bump.outputs.version }}"
           git config user.name "Samrith Shankar"
           git config user.email "9032162+samrith-s@users.noreply.github.com"
-          git add package.json dist/
+          git add -f package.json dist/
           git commit -m "release ${VERSION}"
           git tag -a "${VERSION}" -m "release ${VERSION}"
           git push origin HEAD "${VERSION}"
