@@ -1,0 +1,21 @@
+{
+  "name": "@samrith-s/lit",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/lit.d.ts",
+      "import": "./dist/lit.js"
+    }
+  },
+  "types": "./dist/lit.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}
