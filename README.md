@@ -14,6 +14,14 @@ greet({ name: "Ada", age: 42 });
 // => "Hello, Ada! You are 42 years old."
 ```
 
+## Install
+
+```bash
+bun add @samrith-s/lit
+```
+
+Or copy [`lit.js`](./dist/lit.js) into your project — the library is a single file with no runtime dependencies.
+
 ## Why Lit?
 
 String templates often mix static text with dynamic values. Common approaches leave gaps:
@@ -23,14 +31,6 @@ String templates often mix static text with dynamic values. Common approaches le
 - **Untyped helpers** — easy to pass the wrong key or type at runtime.
 
 Lit keeps the template and its contract in one place. Slot specs like `"name"` or `"name:string"` sit in the template literal; TypeScript infers the parameter object; optional slots and defaults are first-class.
-
-## Install
-
-```bash
-bun add @samrith-s/lit
-```
-
-Or copy [`lit.js`](./dist/lit.js) into your project — the library is a single file with no runtime dependencies.
 
 ## Quick start
 
