@@ -106,6 +106,21 @@ import type { LitFn } from "@samrith/lit";
 const fn: LitFn<{ name: string }> = lit`${"name"}`;
 ```
 
+### Extracting parameters
+
+Extract the parameter object type from a `lit` template (or any `LitFn`):
+
+```ts
+import { lit, type ExtractParams } from "@samrith/lit";
+
+const tmpl = lit`Hello ${"name"}! You are ${"age?:number=18"} years old.`;
+
+type Params = ExtractParams<typeof tmpl>;
+// { name: string; age?: number | null }
+```
+
+Useful when you want to reuse the inferred shape elsewhere — function arguments, context types, or validation schemas — without duplicating the slot definitions.
+
 ### Nested templates
 
 Another `lit` template can be used as a slot value. Nested templates share the parent’s parameter object.

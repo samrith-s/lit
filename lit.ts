@@ -5,13 +5,16 @@ type RequiredParamKeys<P> = {
 }[keyof P];
 
 export type LitFn<P = Record<string, LitValue>> =
-  RequiredParamKeys<P> extends never ? (values?: P) => string : (values: P) => string;
+  RequiredParamKeys<P> extends never
+    ? (values?: P) => string
+    : (values: P) => string;
 
 interface LitNestBrand {
   readonly __litNest?: true;
 }
 
-type LitNestSlot = LitNestBrand & ((values?: Record<string, LitValue>) => string);
+type LitNestSlot = LitNestBrand &
+  ((values?: Record<string, LitValue>) => string);
 
 type SlotRest<S extends string> = S extends `${string}?:${infer R}`
   ? R
@@ -23,23 +26,32 @@ type SlotKey<S extends string> = S extends `${infer K}?:${string}`
   ? K
   : S extends `${infer K}:${string}`
     ? K
-    : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=`
+    : S extends
+          | `${string}:${string}`
+          | `${string}?:${string}`
+          | `${string}?`
+          | `${string}=`
       ? never
       : S;
 
-type SlotOptional<S extends string> = S extends `${string}?:${string}` ? true : false;
-
-type SlotHasExplicitType<S extends string> = S extends `${string}:${string}` | `${string}?:${string}`
+type SlotOptional<S extends string> = S extends `${string}?:${string}`
   ? true
   : false;
 
-type SlotTypeName<S extends string> = SlotHasExplicitType<S> extends true
-  ? SlotRest<S> extends `${infer T}=${string}`
-    ? T
-    : SlotRest<S> extends ""
-      ? "string"
-      : SlotRest<S>
-  : "string";
+type SlotHasExplicitType<S extends string> = S extends
+  | `${string}:${string}`
+  | `${string}?:${string}`
+  ? true
+  : false;
+
+type SlotTypeName<S extends string> =
+  SlotHasExplicitType<S> extends true
+    ? SlotRest<S> extends `${infer T}=${string}`
+      ? T
+      : SlotRest<S> extends ""
+        ? "string"
+        : SlotRest<S>
+    : "string";
 
 type SlotValueType<T extends string> = T extends "string"
   ? string
@@ -59,10 +71,16 @@ type ValidSlotSpec<S extends string> = S extends `${string}=${string}`
       ? S
       : S extends `${string}:${"string" | "number" | "boolean"}`
         ? S
-        : S extends `${string}:${string}` | `${string}?:${string}` | `${string}?` | `${string}=`
+        : S extends
+              | `${string}:${string}`
+              | `${string}?:${string}`
+              | `${string}?`
+              | `${string}=`
           ? never
           : S extends `${infer K}`
-            ? K extends "" ? never : S
+            ? K extends ""
+              ? never
+              : S
             : never;
 
 type ParamFromSlot<S extends string> =
@@ -97,7 +115,9 @@ interface ParsedSlot {
   key: string;
 }
 
-type ResolvedSlot = { kind: "fn"; fn: LitNestSlot } | { kind: "slot"; parsed: ParsedSlot };
+type ResolvedSlot =
+  | { kind: "fn"; fn: LitNestSlot }
+  | { kind: "slot"; parsed: ParsedSlot };
 
 const bareSlotPattern = /^[^?:=]+$/;
 const slotPattern = /^([^?:=]+)(\?)?:([^=]*)(?:=(.*))?$/;
@@ -128,7 +148,9 @@ function parseDefault(raw: string, type: string): LitValue {
     return raw;
   }
 
-  throw new Error(`Invalid lit slot type "${type}". Expected "string", "number", or "boolean".`);
+  throw new Error(
+    `Invalid lit slot type "${type}". Expected "string", "number", or "boolean".`,
+  );
 }
 
 function parseSlot(spec: string): ParsedSlot {
@@ -139,7 +161,7 @@ function parseSlot(spec: string): ParsedSlot {
   const match = slotPattern.exec(spec);
   if (!match) {
     throw new Error(
-      `Invalid lit slot "${spec}". Expected "name", "name?:", "name:type", "name?:type", or "name?:type=default".`
+      `Invalid lit slot "${spec}". Expected "name", "name?:", "name:type", "name?:type", or "name?:type=default".`,
     );
   }
 
@@ -148,21 +170,27 @@ function parseSlot(spec: string): ParsedSlot {
 
   if (defaultRaw !== undefined && optional !== "?") {
     throw new Error(
-      `Invalid lit slot "${spec}". Defaults require an optional slot ("name?:type=default").`
+      `Invalid lit slot "${spec}". Defaults require an optional slot ("name?:type=default").`,
     );
   }
 
   if (type !== "string" && type !== "number" && type !== "boolean") {
-    throw new Error(`Invalid lit slot type "${type}". Expected "string", "number", or "boolean".`);
+    throw new Error(
+      `Invalid lit slot type "${type}". Expected "string", "number", or "boolean".`,
+    );
   }
 
   return {
     key,
-    defaultValue: defaultRaw === undefined ? undefined : parseDefault(defaultRaw, type),
+    defaultValue:
+      defaultRaw === undefined ? undefined : parseDefault(defaultRaw, type),
   };
 }
 
-function resolveParsedSlot(parsed: ParsedSlot, params: Record<string, LitValue>): string {
+function resolveParsedSlot(
+  parsed: ParsedSlot,
+  params: Record<string, LitValue>,
+): string {
   const value = params[parsed.key];
 
   if (value === undefined || value === null) {
@@ -172,7 +200,9 @@ function resolveParsedSlot(parsed: ParsedSlot, params: Record<string, LitValue>)
   return String(value);
 }
 
-function resolveSlots(values: ReadonlyArray<string | LitNestBrand>): ResolvedSlot[] {
+function resolveSlots(
+  values: ReadonlyArray<string | LitNestBrand>,
+): ResolvedSlot[] {
   return values.map((slot) => {
     if (typeof slot === "function") {
       return { kind: "fn", fn: slot as LitNestSlot };
@@ -217,7 +247,9 @@ export function lit<const V extends ReadonlyArray<string | LitNestBrand>>(
       const slot = resolvedSlots[index];
       const slotParams = params as Record<string, LitValue>;
       result +=
-        slot.kind === "fn" ? slot.fn(slotParams) : resolveParsedSlot(slot.parsed, slotParams);
+        slot.kind === "fn"
+          ? slot.fn(slotParams)
+          : resolveParsedSlot(slot.parsed, slotParams);
       result += strings[index + 1] ?? "";
     }
 
@@ -229,3 +261,6 @@ export function lit<const V extends ReadonlyArray<string | LitNestBrand>>(
   > &
     LitNestBrand;
 }
+
+/** Parameter object inferred from a `lit` template (or any `LitFn`). */
+export type ExtractParams<F extends LitFn> = ParamOf<F>;
