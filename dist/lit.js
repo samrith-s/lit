@@ -74,7 +74,9 @@ export function lit(strings, ...values) {
             const slot = resolvedSlots[index];
             const slotParams = params;
             result +=
-                slot.kind === "fn" ? slot.fn(slotParams) : resolveParsedSlot(slot.parsed, slotParams);
+                slot.kind === "fn"
+                    ? slot.fn(slotParams)
+                    : resolveParsedSlot(slot.parsed, slotParams);
             result += strings[index + 1] ?? "";
         }
         return result;

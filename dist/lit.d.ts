@@ -37,4 +37,6 @@ type ValidateSlotTuple<V extends readonly unknown[]> = V extends readonly [
  * ```
  */
 export declare function lit<const V extends ReadonlyArray<string | LitNestBrand>>(strings: TemplateStringsArray, ...values: V): LitFn<Simplify<MergeParams<ValidateSlotTuple<V>>>> & LitNestBrand;
+/** Parameter object inferred from a `lit` template (or any `LitFn`). */
+export type ExtractParams<F extends LitFn> = ParamOf<F>;
 export {};
